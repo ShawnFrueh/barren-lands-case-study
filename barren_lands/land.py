@@ -7,6 +7,7 @@ class Field(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self.zone = Zone(Coord(0, 0), Coord(width-1, height-1))
         self.barren_zones = set()
         self.fertile_zones = set()
 
@@ -27,6 +28,9 @@ class Field(object):
             if zone.contains(coord):  # type: Zone
                 # We already used this coord, return False.
                 return False
+        if not self.zone.contains(coord):
+            # We are outside the field. Turn that tractor around.
+            return False
         # Not used, all good.
         return True
 
@@ -56,7 +60,7 @@ class Field(object):
 
     def get_end(self, coord):
         end = coord.copy()
-        for i in range(coord.x, self.width+1):
+        for i in range(coord.x, self.width + 1):
             # If end is still within the field
             if self.check_coord(end.right()):
                 end.x += 1
@@ -66,13 +70,13 @@ class Field(object):
 
     def get_rows(self, start, end):
         row_ids = range(start.x, end.x + 1)
-        last = end
-        for r in range(start.y, self.height):
+        last = end.copy()
+        for y in range(start.y, self.height):
             # Make sure each coord in the zone is fertile and free
-            row_debug = [(i, r) for i in row_ids]
-            row_data = [self.check_coord(Coord(i, r)) for i in row_ids]
+            row_debug = [(i, y) for i in row_ids]
+            row_data = [self.check_coord(Coord(i, y)) for i in row_ids]
             if all(row_data):
-                last = Coord(end.x, r)
+                last = Coord(end.x, y)
             else:
                 break
         return last
@@ -83,6 +87,7 @@ class Field(object):
 
 class Coord(object):
     """Representation of one unit within a Zone"""
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -91,7 +96,7 @@ class Coord(object):
         return Coord(self.x, self.y)
 
     def right(self):
-        return Coord(self.x+1, self.y)
+        return Coord(self.x + 1, self.y)
 
     def __repr__(self):
         """Used for debugging with print ;)
@@ -104,6 +109,7 @@ class Coord(object):
 
 class Zone(object):
     """Class to handle storing zone information from within the Field."""
+
     def __init__(self, start, end):
         """Representation of a zone within a Field.
 
@@ -166,4 +172,3 @@ class Zone(object):
             (str): Formatted results of this zone
         """
         return f"start:{self.start.x}-{self.start.y} end:{self.end.x}-{self.end.y}"
-

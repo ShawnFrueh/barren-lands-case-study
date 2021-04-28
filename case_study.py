@@ -5,11 +5,10 @@ width = 400
 height = 600
 inputs = {"0 292 399 307"}
 #inputs = {"48 192 351 207", "48 392 351 407", "120 52 135 547", "260 52 275 547"}
-#inputs = {"0 29 39 30"}
 
 # width = 5
 # height = 5
-#inputs = {"1 0 4 1"}
+# inputs = {"1 0 4 1"}
 
 Field = land.Field(width, height)
 
