@@ -1,4 +1,5 @@
 from itertools import product
+from .visualize import display_image
 
 
 class Field(object):
@@ -55,9 +56,9 @@ class Field(object):
 
     def get_end(self, coord):
         end = coord.copy()
-        for i in range(coord.x, self.width):
+        for i in range(coord.x, self.width+1):
             # If end is still within the field
-            if coord.x <= self.width:
+            if self.check_coord(end.right()):
                 end.x += 1
             else:
                 break
@@ -68,12 +69,16 @@ class Field(object):
         last = end
         for r in range(start.y, self.height):
             # Make sure each coord in the zone is fertile and free
-            if all(self.check_coord(Coord(r, i)) for i in range(start.x, end.x + 1)):
-                last = Coord(end.x + 1, r)
-                print("last", last)
+            row_debug = [(i, r) for i in row_ids]
+            row_data = [self.check_coord(Coord(i, r)) for i in row_ids]
+            if all(row_data):
+                last = Coord(end.x, r)
             else:
                 break
         return last
+
+    def display(self):
+        display_image(self.fertile_zones, self.width, self.height)
 
 
 class Coord(object):
@@ -84,6 +89,9 @@ class Coord(object):
 
     def copy(self):
         return Coord(self.x, self.y)
+
+    def right(self):
+        return Coord(self.x+1, self.y)
 
     def __repr__(self):
         """Used for debugging with print ;)

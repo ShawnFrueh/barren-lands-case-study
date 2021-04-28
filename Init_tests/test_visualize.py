@@ -13,7 +13,7 @@ def print_grid(bounds, width=40, height=60):
         for y in range(height):
             if bounds[2] <= x <= bounds[0]:
                 color = rand_color
-                img.putpixel(xy=(y, y), value=color)
+                img.putpixel(xy=(x, y), value=color)
             elif bounds[1] <= y <= bounds[3]:
                 color = rand_color
                 img.putpixel(xy=(x, y), value=color)
