@@ -3,7 +3,7 @@ from PIL import Image
 import random
 
 image_name = abspath("grid.png")
-img = Image.new("RGB", size=(400, 600), color=(0, 200, 0))
+img = Image.new("RGB", size=(400, 600), color=(20, 20, 20))
 
 
 def print_grid(bounds, width=40, height=60):
@@ -11,14 +11,8 @@ def print_grid(bounds, width=40, height=60):
     print(rand_color)
     for x in range(width):
         for y in range(height):
-            if bounds[2] <= x <= bounds[0]:
-                color = rand_color
-                img.putpixel(xy=(x, y), value=color)
-            elif bounds[1] <= y <= bounds[3]:
-                color = rand_color
-                img.putpixel(xy=(x, y), value=color)
-            else:
-                color = (209, 123, 193)
+            if bounds[0] <= x <= bounds[2] and bounds[1] <= y <= bounds[3]:
+                img.putpixel(xy=(x, y), value=rand_color)
 
 
 data = [[int(j) for j in i.split(" ")] for i in ("0 292 399 307",)]

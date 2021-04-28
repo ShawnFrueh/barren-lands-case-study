@@ -47,7 +47,8 @@ class Field(object):
             self.fertile_zones.add(zone)
 
     def check_zones(self):
-        for y, x in product(range(0, self.height), range(0, self.width)):
+        #for y, x in product(range(0, self.height), range(0, self.width)):
+        for x, y in product(range(0, self.width), range(0, self.height)):
             current_coord = Coord(x, y)
             if self.check_coord(current_coord):
                 self.mark_zone(current_coord)
