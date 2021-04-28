@@ -9,14 +9,14 @@ img = Image.new("RGB", size=(400, 600), color=(0, 200, 0))
 def print_grid(bounds, width=40, height=60):
     rand_color = tuple(random.randint(0, 255) for i in range(3))
     print(rand_color)
-    for x in range(height):
-        for y in range(width):
-            if bounds[0] <= x <= bounds[1]:
+    for x in range(width):
+        for y in range(height):
+            if bounds[2] <= x <= bounds[0]:
                 color = rand_color
-                img.putpixel(xy=(y, x), value=color)
-            elif bounds[2] <= y <= bounds[3]:
+                img.putpixel(xy=(y, y), value=color)
+            elif bounds[1] <= y <= bounds[3]:
                 color = rand_color
-                img.putpixel(xy=(y, x), value=color)
+                img.putpixel(xy=(x, y), value=color)
             else:
                 color = (209, 123, 193)
 
