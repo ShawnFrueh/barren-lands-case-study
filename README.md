@@ -1,9 +1,18 @@
 # target-case-study
 
 ## Setup
+Create your ENV and enter it.
+`conda env create -f ./conda_env.yml`
 
 ## Test
 `python -m pytest -v -s --cov=barren_lands test`
+
+
+## run
+Use --vis to display the image result
+`python case_study.py "0 292 399 30" --vis`
+`python case_study.py "48 192 351 207" "48 392 351 407" "120 52 135 547" "260 52 275 547" --vis`
+
 
 ### Barren Land Analysis
 You have a farm of 400m by 600m where coordinates of the field are from (0, 0) to (399, 599). A portion of the farm is barren, and all the barren land is in the form of rectangles. Due to these rectangles of barren land, the remaining area of fertile land is in no particular shape. An area of fertile land is defined as the largest area of land that is not covered by any of the rectangles of barren land. 
