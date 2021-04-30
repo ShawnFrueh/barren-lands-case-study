@@ -1,3 +1,4 @@
+pyside2
 pillow
 pytest
 pytest-cov

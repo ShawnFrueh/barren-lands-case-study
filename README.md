@@ -5,12 +5,12 @@ Create your ENV and enter it.
 `conda env create -f ./conda_env.yml`
 
 ### Test (using env)
-`python -m pytest -v -s --cov=barren_lands test`
+`python -m pytest -v -s --cov=barren_lands tests`
 
 
 ### Run (using env)
 Use `--vis` to display the image result
-- `python case_study.py "0 292 399 30" --vis`
+- `python case_study.py "0 292 399 307" --vis`
 - `python case_study.py "48 192 351 207" "48 392 351 407" "120 52 135 547" "260 52 275 547" --vis`
 
 
