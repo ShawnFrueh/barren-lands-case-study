@@ -5,6 +5,12 @@ from .visualize import display_image
 class Field(object):
 
     def __init__(self, width, height):
+        """Field initialization.
+
+        Args:
+            width (int): The max width of the Field.
+            height (int): The max height of the Field.
+        """
         self.width = width
         self.height = height
         self.zone = Zone(Coord(0, 0), Coord(width-1, height-1))
@@ -54,6 +60,14 @@ class Field(object):
                 self.mark_zone(current_coord)
 
     def mark_zone(self, zone_start):
+        """Marks a zone from an input coordinate.
+
+        Args:
+            zone_start (Coord): The coordinate of the field to start the zone.
+
+        Returns:
+            new_zone (Zone): The new zone generated from a start coord.
+        """
         row_end = self.get_end(zone_start)
         zone_end = self.get_rows(zone_start, row_end)
         new_zone = Zone(zone_start, zone_end)
@@ -61,6 +75,14 @@ class Field(object):
         return new_zone
 
     def get_end(self, coord):
+        """Gets the last unmarked coordinate in the same row.
+
+        Args:
+            coord (Coord): The coordinate to start from.
+
+        Returns:
+            end (Coord): The last available coordinate.
+        """
         end = coord.copy()
         for i in range(coord.x, self.width + 1):
             # If end is still within the field
@@ -71,6 +93,15 @@ class Field(object):
         return end
 
     def get_rows(self, start, end):
+        """Given a start and end of a single row, finds all available sub rows.
+
+        Args:
+            start (Coord): The start coord of the first row.
+            end (Coord): The last cord of the row.
+
+        Returns:
+            last (Coord): The Opposite bounding coordinate from the start.
+        """
         row_ids = range(start.x, end.x + 1)
         last = end.copy()
         for y in range(start.y, self.height):
@@ -84,6 +115,11 @@ class Field(object):
         return last
 
     def display(self, test=False):
+        """Triggers a render of the resulting Field.
+
+        Args:
+            test (bool): If running a pytest, dont display the image.
+        """
         display_image(self.fertile_zones, self.width, self.height, test=test)
 
 
@@ -95,9 +131,11 @@ class Coord(object):
         self.y = y
 
     def copy(self):
+        # Returns a new coord with this coords coordinates.
         return Coord(self.x, self.y)
 
     def right(self):
+        """Gets the coord immediately to the right of this coord."""
         return Coord(self.x + 1, self.y)
 
     def __eq__(self, other):
