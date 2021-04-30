@@ -1,5 +1,5 @@
 from os.path import abspath
-from PIL import Image
+from PIL import Image, ImageDraw, ImageDraw2
 import random
 
 image_name = abspath("grid.png")

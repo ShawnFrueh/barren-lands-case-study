@@ -1,26 +1,36 @@
-
+import argparse
 from barren_lands import land, utils
 
-width = 400
-height = 600
-#inputs = {"0 292 399 307"}
-inputs = {"48 192 351 207", "48 392 351 407", "120 52 135 547", "260 52 275 547"}
+# Generate the arguments for the command line input.
+parser = argparse.ArgumentParser(
+    description="Generates a list of rectangular zones that do not enter the 'barron-zones'.")
+parser.add_argument("barron_zones", type=str, nargs="+",
+                    help="List of space-separated barren zones.\n"
+                         "example input: '0 292 351 207'\n"
+                         "example multi input: '48 192 351 207' '48 392 351 407'")
+parser.add_argument("--width", type=int, default=400,
+                    help="The width of the available land for zoning.")
+parser.add_argument("--height", type=int, default=600,
+                    help="The height of the available land for zoning.")
+parser.add_argument("--vis", dest="vis", action='store_true',
+                    help="Render the zones into an image and display it.")
+BARREN_DATA = parser.parse_args()
 
-# width = 5
-# height = 5
-# inputs = {"1 0 4 1"}
 
-Field = land.Field(width, height)
+if __name__ == "__main__":
+    # Generate the initial field in which the barron zones are placed.
+    Field = land.Field(BARREN_DATA.width, BARREN_DATA.height)
 
-for barren_coord in inputs:
-    barren_zone = utils.format_input(barren_coord)
-    Field.add_zone(barren_zone, barren=True)
+    for barren_coord in BARREN_DATA.barron_zones:
+        barren_zone = utils.format_input(barren_coord)
+        Field.add_zone(barren_zone, barren=True)
 
-Field.check_zones()
-Field.display()
+    # Run the tool to find the rectangular zones.
+    Field.check_zones()
 
-for zone in Field.fertile_zones:
-    print("Fertile:", zone, zone.get_size())
+    if BARREN_DATA.vis:
+        # Create and display an image of the data.
+        Field.display()
 
-for zone in Field.barren_zones:
-    print("Barren:", zone.get_size())
+    # Return the zone areas sorted from least to most surface area.
+    print(sorted([zone.get_size() for zone in Field.fertile_zones]))

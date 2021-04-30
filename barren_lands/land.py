@@ -47,7 +47,7 @@ class Field(object):
             self.fertile_zones.add(zone)
 
     def check_zones(self):
-        #for y, x in product(range(0, self.height), range(0, self.width)):
+        """Runs the final calculation to mark the zones."""
         for x, y in product(range(0, self.width), range(0, self.height)):
             current_coord = Coord(x, y)
             if self.check_coord(current_coord):
@@ -58,6 +58,7 @@ class Field(object):
         zone_end = self.get_rows(zone_start, row_end)
         new_zone = Zone(zone_start, zone_end)
         self.add_zone(new_zone)
+        return new_zone
 
     def get_end(self, coord):
         end = coord.copy()
@@ -82,8 +83,8 @@ class Field(object):
                 break
         return last
 
-    def display(self):
-        display_image(self.fertile_zones, self.width, self.height)
+    def display(self, test=False):
+        display_image(self.fertile_zones, self.width, self.height, test=test)
 
 
 class Coord(object):
@@ -98,6 +99,13 @@ class Coord(object):
 
     def right(self):
         return Coord(self.x + 1, self.y)
+
+    def __eq__(self, other):
+        """Coordinate comparison
+        Args:
+            other (Coord): Other coordinate to check.
+        """
+        return self.x == other.x and self.y == other.y
 
     def __repr__(self):
         """Used for debugging with print ;)
@@ -149,6 +157,14 @@ class Zone(object):
             (int): The volume of this zone in units.
         """
         return self.width() * self.height()
+
+    def rectangle(self):
+        """Returns a formatted version of this Zone for use with PIL.
+
+        Returns:
+            (list[tuple]): Formatted tuple for PIL.
+        """
+        return [(self.start.x, self.start.y), (self.end.x, self.end.y)]
 
     def contains(self, coord):
         """Checks to see if the incoming coord is within this zone.

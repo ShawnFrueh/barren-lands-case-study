@@ -1,0 +1,10 @@
+name: barren_lands
+channels:
+  - conda-forge
+  - defaults
+  - free
+dependencies:
+  - python=3.7
+  - pip
+  - pip:
+      - --requirement=requirements.txt
