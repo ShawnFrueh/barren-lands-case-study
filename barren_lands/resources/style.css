@@ -31,3 +31,10 @@ QPlainTextEdit {
     color: #8f99a8;
     border: none;
 }
+ResultLabel{
+    color: #8f99a8;
+}
+ResultLabel:hover {
+    color: #61a026;
+    background-color: rgba(97, 160, 38, 20);
+}

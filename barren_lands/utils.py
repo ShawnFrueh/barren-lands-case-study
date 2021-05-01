@@ -1,3 +1,4 @@
+import pathlib
 from .land import Coord, Zone
 
 
@@ -26,8 +27,34 @@ def format_raw_input(input):
         list[list[int]]: Each input converted into a list of integers.
     """
     # Replace any “ or ” characters with "
-    raw_input = input.strip().replace('“', '"').replace("”", '"').replace(",", "")
+    raw_input = input.strip().replace('“', '"').replace("”", '"').replace(",", "").replace("\n",
+                                                                                           " ")
     # Break apart the string into each coordinate
     raw_inputs = [r.replace('"', '') for r in raw_input.split('" "')]
     # Return coordinates as lists of ints.
     return [[int(i) for i in r.split(" ")] for r in raw_inputs]
+
+
+def get_icon():
+    """Gets the icon file from the resources directory.
+
+    Returns:
+        icon (str): The path the the icon file.
+    """
+    icon = pathlib.Path(__file__).parent.joinpath("resources", "icon.png")
+    # We just want the string to the path for PySide.
+    return str(icon)
+
+
+def get_css():
+    """Gets the style.css file from the resources directory.
+
+    Returns:
+        css_data (str): The data from the style.css file.
+    """
+    css = pathlib.Path(__file__).parent.joinpath("resources", "style.css")
+
+    with open(css, "r") as style_file:
+        css_data = style_file.read()
+
+    return css_data

@@ -41,6 +41,10 @@ The images here helped guide me to attempt filling in zones, `left`>`right`>`top
 Zone class: (Reassuring my math)
 - [Point within bounding box.](https://stackoverflow.com/questions/18295825/determine-if-point-is-within-bounding-box)
 
+icon
+- https://www.vecteezy.com/vector-art/90874-vector-rolling-hills-flat-icons
+
+
 ####Post code research:
 - [js rectangle decomposition](https://github.com/mikolalysenko/rectangle-decomposition)
 - [Fewest Rectangles to cover](https://stackoverflow.com/questions/5919298/algorithm-for-finding-the-fewest-rectangles-to-cover-a-set-of-rectangles-without)
