@@ -1,0 +1,33 @@
+
+QMainWindow {
+    background-color: #272c35;
+}
+
+QGraphicsView {
+    background-color: #6b512b;
+    border: None;
+}
+
+QPushButton {
+    background-color: #363d49;
+    color: #8f99a8;
+}
+QPushButton:pressed {
+    background-color: #20252c;
+}
+QPushButton:hover {
+    background-color: #596475;
+}
+
+QSpinBox {
+    background-color: #20252c;
+    color: #8f99a8;
+    /*border: 1px solid #363d49;*/
+    padding-right: 2px;
+    height: 22px;
+}
+QPlainTextEdit {
+    background-color: #20252c;
+    color: #8f99a8;
+    border: none;
+}

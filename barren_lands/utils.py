@@ -14,3 +14,20 @@ def format_input(input):
     start = Coord(values[0], values[1])
     end = Coord(values[2], values[3])
     return Zone(start, end)
+
+
+def format_raw_input(input):
+    """Format input for the GUI application.
+
+    Args:
+        input (str): Raw input from the UI
+
+    Returns:
+        list[list[int]]: Each input converted into a list of integers.
+    """
+    # Replace any “ or ” characters with "
+    raw_input = input.strip().replace('“', '"').replace("”", '"').replace(",", "")
+    # Break apart the string into each coordinate
+    raw_inputs = [r.replace('"', '') for r in raw_input.split('" "')]
+    # Return coordinates as lists of ints.
+    return [[int(i) for i in r.split(" ")] for r in raw_inputs]

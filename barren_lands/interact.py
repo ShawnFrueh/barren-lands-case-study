@@ -1,16 +1,31 @@
 import sys
+import time
+import pathlib
 from PySide2.QtWidgets import (QApplication, QWidget, QMainWindow, QVBoxLayout, QHBoxLayout,
                                QGraphicsView, QGraphicsScene, QLineEdit, QPushButton, QSpacerItem,
-                               QSizePolicy, QSpinBox)
+                               QSizePolicy, QLabel, QPlainTextEdit)
 from PySide2.QtGui import Qt, QBrush, QColor
+from PySide2.QtCore import QRect
 
 from barren_lands import land, utils
 
 
-class CaseStudyWindow(QMainWindow):
+class BarrenButton(QPushButton):
+
+    def __init__(self, label, parent, cmd):
+        QPushButton.__init__(self, label, parent)
+        self.setCursor(Qt.PointingHandCursor)
+        # Add the callback
+        self.clicked.connect(cmd)
+
+
+class BarrenLandsWindow(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
+        self.app = QApplication.instance()
+        self.resources = pathlib.Path(__file__).parent
+        self.results = set()
         self.canvas_width = 400
         self.canvas_height = 600
 
@@ -22,11 +37,13 @@ class CaseStudyWindow(QMainWindow):
         self.build_core_ui()
         self.build_controls()
         self.build_connections()
+        self.set_style()
 
     def setup_window(self):
         self.setWindowTitle("Barren Lands")
         self.setMinimumHeight(600)
         self.setMinimumWidth(700)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
     def build_core_ui(self):
         """
@@ -35,9 +52,10 @@ class CaseStudyWindow(QMainWindow):
         self.base_widget = QWidget(self)
         self.base_layout = QHBoxLayout(self.base_widget)
         # Imagery
-        self.scene = QGraphicsScene()
+        scene_zone = QRect(0, 0, self.canvas_width, self.canvas_height)
+        self.scene = QGraphicsScene(scene_zone, self)
         self.canvas = QGraphicsView(self.scene, self)
-        self.canvas.setFixedSize(self.canvas_width + 1, self.canvas_height + 1)
+        self.canvas.setFixedSize(self.canvas_width, self.canvas_height)
 
         self.base_layout.addWidget(self.canvas)
         # Set the core widget to the window
@@ -47,69 +65,96 @@ class CaseStudyWindow(QMainWindow):
         self.controls = QWidget(self)
         self.controlls_layout = QVBoxLayout(self.controls)
 
-        # self.input = QLineEdit(self)
-        # self.input.setPlaceholderText('"48 192 351 207" "48 392 351 407"')
         self.input = self.build_coord_input()
-        self.btn_add_bzone = QPushButton(text="Add", parent=self)
-        self.btn_run = QPushButton(text="Run", parent=self)
-        self.btn_clear = QPushButton(text="Clear", parent=self)
+        self.btn_add_bzone = BarrenButton(label="Add", parent=self, cmd=self.ctl_add_input)
+        self.btn_run = BarrenButton(label="Analyze", parent=self, cmd=self.ctl_run)
+        self.btn_clear = BarrenButton(label="Reset", parent=self, cmd=self.ctl_clear_zones)
+
+        self.result_layout = QVBoxLayout()
 
         self.controlls_layout.addLayout(self.input)
         self.controlls_layout.addWidget(self.btn_add_bzone)
         self.controlls_layout.addWidget(self.btn_run)
+        self.controlls_layout.addLayout(self.result_layout)
         self.controlls_layout.addItem(QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.controlls_layout.addWidget(self.btn_clear)
 
         self.base_layout.addWidget(self.controls)
 
     def build_coord_input(self):
-        layout = QHBoxLayout()
-        self.input_a = QSpinBox()
-        self.input_aa = QSpinBox()
-        self.input_b = QSpinBox()
-        self.input_bb = QSpinBox()
-        for coord in (self.input_a, self.input_aa, self.input_b, self.input_bb):
-            coord.setMaximum(self.canvas_height)
-            layout.addWidget(coord)
-        return layout
+        base_layout = QVBoxLayout()
+        base_layout.setContentsMargins(0, 0, 0, 0)
+        self.raw_input = QPlainTextEdit()
+        self.raw_input.setMaximumHeight(75)
+        self.raw_input.setPlaceholderText('example: "0 292 399 307"')
+        self.input_layout = QVBoxLayout()
+        self.input_layout.setContentsMargins(0, 0, 0, 0)
+        base_layout.addWidget(self.raw_input)
+        base_layout.addLayout(self.input_layout)
+        return base_layout
 
     def build_connections(self):
-        self.btn_add_bzone.clicked.connect(self.ctl_add_input)
-        self.btn_clear.clicked.connect(self.ctl_clear_zones)
-        self.btn_run.clicked.connect(self.ctl_run)
+        pass
 
     def ctl_add_input(self):
-        # input_data = self.input.text().strip().split('" "')
-        start_coord = land.Coord(self.input_a.value(), self.input_aa.value())
-        end_coord = land.Coord(self.input_b.value(), self.input_bb.value())
-        zone = land.Zone(start_coord, end_coord)
-        self.field.add_zone(zone, barren=True)
-        new_rectangle = self.scene.addRect(zone.start.x, zone.start.y,
-                                               zone.end.x - zone.start.x,
-                                               zone.end.y - zone.start.y)
-        new_rectangle.setBrush(QBrush(QColor(120, 30, 30), Qt.SolidPattern))
-        new_rectangle.setPen(Qt.NoPen)
-        self.barren_zones.append(new_rectangle)
+        raw_data = self.raw_input.toPlainText()
+        if raw_data:
+            parsed_input = utils.format_raw_input(raw_data)
+            for input in parsed_input:
+                start_coord = land.Coord(input[0], input[1])
+                end_coord = land.Coord(input[2], input[3])
+                zone = land.Zone(start_coord, end_coord)
+                self.field.add_zone(zone, barren=True)
+                self.draw_zone(zone, barren=True)
 
     def ctl_run(self):
+        self.clear_results()
         for rectangle in self.fertile_zones:
             self.scene.removeItem(rectangle)
         self.field.fertile_zones = set()
 
         self.field.check_zones()
         for zone in self.field.fertile_zones:
-            new_rectangle = self.scene.addRect(zone.start.x, zone.start.y,
-                                               zone.end.x - zone.start.x,
-                                               zone.end.y - zone.start.y)
-            new_rectangle.setBrush(QBrush(QColor(120, 220, 30), Qt.SolidPattern))
-            new_rectangle.setPen(Qt.NoPen)
-            self.fertile_zones.append(new_rectangle)
+            self.draw_zone(zone)
+            self.canvas.update()
+            self.app.processEvents()
+            time.sleep(.025)
+        for result in sorted([z.get_size() for z in self.field.fertile_zones]):
+            label = QLabel(str(result))
+            label.setAlignment(Qt.AlignHCenter)
+            self.results.add(label)
+            self.result_layout.addWidget(label)
 
     def ctl_clear_zones(self):
         for rectangle in self.barren_zones + self.fertile_zones:
             self.scene.removeItem(rectangle)
         self.field.fertile_zones = set()
         self.field.barren_zones = set()
+        self.clear_results()
+
+    def clear_results(self):
+        for result in self.results:
+            result.deleteLater()
+        self.results = set()
+
+    def draw_zone(self, zone, barren=False):
+        new_rectangle = self.scene.addRect(zone.start.x, zone.start.y,
+                                           zone.end.x - zone.start.x + 1,
+                                           zone.end.y - zone.start.y + 1)
+        if barren:
+            self.barren_zones.append(new_rectangle)
+            brush = QBrush(QColor(10, 10, 10), Qt.Dense2Pattern)
+        else:
+            self.fertile_zones.append(new_rectangle)
+            brush = QBrush(QColor(90, 220, 90, 150), Qt.Dense5Pattern)
+
+        new_rectangle.setBrush(brush)
+        new_rectangle.setPen(Qt.NoPen)
+
+    def set_style(self):
+        style_sheet = self.resources.joinpath("resources", "style.css")
+        with open(style_sheet, "r") as style_file:
+            self.setStyleSheet(style_file.read())
 
 
 if __name__ == "__main__":
@@ -117,7 +162,7 @@ if __name__ == "__main__":
 
     case_study_app = QApplication(sys.argv)
 
-    window = CaseStudyWindow()
+    window = BarrenLandsWindow()
     window.show()
 
     case_study_app.exec_()
