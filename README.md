@@ -10,9 +10,10 @@ Create your ENV and enter it.
 
 ### Run (using env)
 Use `--vis` to display the image result
-- `python case_study.py "0 292 399 307" --vis`
-- `python case_study.py "48 192 351 207" "48 392 351 407" "120 52 135 547" "260 52 275 547" --vis`
-
+- `python case_study.py --vis --zones "0 292 399 307"`
+- `python case_study.py --vis --zones "48 192 351 207" "48 392 351 407" "120 52 135 547" "260 52 275 547"`
+Use `--gui` to open the GUI application
+- `python case_study.py --gui`
 
 ## Barren Land Analysis
 ```text
