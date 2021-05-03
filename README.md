@@ -1,20 +1,22 @@
 # target-case-study
 
-## Setup
+## Setup (Python 3.7)
 Create your ENV and enter it. (I used conda for this.)
-`conda env create -f ./conda_env.yml`
+- `conda env create -f ./conda_env.yml`
+- `conda activate barren_lands`
 
-if using another environment type, just pip install the requirements.txt file.
+if using another environment type, make sure it is `python 3.7` and pip install 
+the `requirements.txt` file.
 
 ### Test (using env)
 `python -m pytest -v -s --cov=barren_lands tests`
 
 
 ### Run (using env)
-Use `--vis` to display the image result
+Use `--vis` to display the image result using the default os image viewer.
 - `python case_study.py --zones "0 292 399 307"`
 - `python case_study.py --zones "48 192 351 207" "48 392 351 407" "120 52 135 547" "260 52 275 547"`
-- Use `--gui` to open the GUI application
+- Use `--gui` to open the interactive GUI application
   - `python case_study.py --gui`
   - `python case_study.py --gui --zones "0 292 399 307"`
 
