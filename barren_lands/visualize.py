@@ -1,6 +1,6 @@
-from os.path import dirname, join
-from PIL import Image, ImageDraw
 import random
+from pathlib import Path
+from PIL import Image, ImageDraw
 
 
 def display_image(islands, width=40, height=60, base=(20, 20, 20), test=False):
@@ -15,7 +15,7 @@ def display_image(islands, width=40, height=60, base=(20, 20, 20), test=False):
     """
     img = Image.new("RGBA", size=(width, height), color=base)
     drawer = ImageDraw.Draw(img)
-    img_out = join(dirname(dirname(__file__)), "grid.png")
+    img_out = Path(__file__).parent.parent.joinpath("grid.png")
 
     for i, island in enumerate(islands):
         for zone in island:

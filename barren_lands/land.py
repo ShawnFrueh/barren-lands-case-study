@@ -111,8 +111,32 @@ class Field(object):
                             zone_que.add(n)
                 if island_zones:
                     self.islands.append(island_zones)
-        # Sort the island list from largest to smallest
-        self.islands.sort(key=lambda i: len(i), reverse=True)
+        # Sort the island list from largest to smallest area
+        self.islands.sort(key=lambda i: self.get_island_volume(i), reverse=True)
+
+    @staticmethod
+    def get_island_volume(island):
+        """Get the volume of an list of zones.
+
+        Args:
+            island (list[Zone]): List of zones that make up the island.
+
+        Returns:
+            (int): The volume of the island.
+        """
+        return sum(zone.get_size() for zone in island)
+
+    def islands_as_area(self):
+        """Get the area of each island.
+
+        Returns:
+            volume_list (list[int]): List of each islands area sorted from smallest to largest.
+        """
+        volume_list = list()
+        for island in self.islands:
+            volume_list.append(self.get_island_volume(island))
+        volume_list.sort()
+        return volume_list
 
     def get_end(self, coord):
         """Gets the last unmarked coordinate in the same row.
@@ -146,7 +170,6 @@ class Field(object):
         last = end.copy()
         for y in range(start.y, self.height):
             # Make sure each coord in the zone is fertile and free
-            row_debug = [(i, y) for i in row_ids]
             row_data = [self.check_coord(Coord(i, y)) for i in row_ids]
             if all(row_data):
                 last = Coord(end.x, y)
@@ -300,7 +323,26 @@ class Zone(object):
         return boundary
 
     def id(self):
+        """Identifier for storing zone in a dict.
+
+        Returns:
+            (str): `sx-sy-ex-ey`
+        """
         return f"{self.start.x}-{self.start.y}-{self.end.x}-{self.end.y}"
+
+    def __add__(self, other):
+        """Allow adding zones together to get their area.
+
+        Args:
+            other (int|Zone): Int or zone to add to the area of this zone.
+
+        Returns:
+            (int): The size of the two zones added together.
+        """
+        if isinstance(other, int):
+            return self.get_size() + other
+        elif isinstance(other, Zone):
+            return self.get_size() + other.get_size()
 
     def __repr__(self):
         """Used for debugging with print ;)

@@ -3,8 +3,8 @@ import time
 import random
 import pathlib
 from PySide2.QtWidgets import (QApplication, QWidget, QMainWindow, QVBoxLayout, QHBoxLayout,
-                               QGraphicsView, QGraphicsScene, QLineEdit, QPushButton, QSpacerItem,
-                               QSizePolicy, QLabel, QPlainTextEdit, QGroupBox)
+                               QGraphicsView, QGraphicsScene, QPushButton, QSizePolicy, QLabel,
+                               QPlainTextEdit, QGroupBox)
 from PySide2.QtGui import Qt, QBrush, QColor, QIcon, QPen
 from PySide2.QtCore import QRect, QRectF
 
@@ -69,13 +69,21 @@ class ResultLabel(QLabel):
 class BarrenLandsWindow(QMainWindow):
     """User interface to interact with the barren lands library."""
 
-    def __init__(self, width=400, height=600):
+    def __init__(self, width=400, height=600, zones=None):
+        """Initialization of BarrenLands GUI
+
+        Args:
+            width (int): The width of the canvas/field.
+            height (int): The height of the canvas/field.
+            zones (str): Text data to add to raw input if provided.
+        """
         QMainWindow.__init__(self)
         self.app = QApplication.instance()
         self.resources = pathlib.Path(__file__).parent
         self.results = set()
         self.canvas_width = width
         self.canvas_height = height
+        self.user_input = zones
         # Colors for drawing onto the QGraphicsScene
         self.brush_barren = QBrush(QColor(120, 120, 75), Qt.Dense2Pattern)
         self.brush_overlay = QBrush(QColor(20, 20, 20, 35), Qt.SolidPattern)
@@ -109,17 +117,22 @@ class BarrenLandsWindow(QMainWindow):
                 https://stackoverflow.com/questions/23174481/pyside-qt-layout-not-working
         """
         self.base_widget = QWidget(self)
-        self.base_layout = QHBoxLayout(self.base_widget)
+        self.layout_base = QHBoxLayout(self.base_widget)
+        self.layout_canvas = QVBoxLayout()
+        self.setContentsMargins(0, 0, 0, 0)
         # Setup the QGraphics items to display out zones as active elements.
         scene_zone = QRect(0, 0, self.canvas_width, self.canvas_height)
         self.scene = QGraphicsScene(scene_zone, self)
         self.canvas = QGraphicsView(self.scene, self)
-        self.canvas.setFixedSize(self.canvas_width, self.canvas_height)
+        self.canvas.setFixedSize(self.canvas_width+1, self.canvas_height+1)
         # Draw faint bullseye for target.
         self.scene.addEllipse(self.get_center_rect(300), Qt.NoPen, self.brush_overlay)
         self.scene.addEllipse(self.get_center_rect(200), Qt.NoPen, self.brush_innerlay)
         self.scene.addEllipse(self.get_center_rect(100), Qt.NoPen, self.brush_overlay)
-        self.base_layout.addWidget(self.canvas)
+        self.layout_canvas.addWidget(self.canvas)
+        self.lbl_island = QLabel("Island Areas:")
+        self.layout_canvas.addWidget(self.lbl_island)
+        self.layout_base.addLayout(self.layout_canvas)
         # Set the core widget to the window.
         self.setCentralWidget(self.base_widget)
 
@@ -138,32 +151,32 @@ class BarrenLandsWindow(QMainWindow):
     def build_controls(self):
         """Build the control panel that contains all the inputs."""
         self.controls = QWidget(self)
-        self.controls_layout = QVBoxLayout(self.controls)
-        self.controls_layout.setContentsMargins(0, 0, 0, 0)
+        self.layout_controls = QVBoxLayout(self.controls)
+        self.layout_controls.setContentsMargins(0, 0, 0, 0)
         # Initialize the text box for user input
         self.input = self.build_coord_input()
         # Create the buttons
         self.btn_add_bzone = BarrenButton(label="Add", parent=self, cmd=self.ctl_add_input)
         self.btn_run = BarrenButton(label="Analyze", parent=self, cmd=self.ctl_run)
         # Build the utility buttons
-        self.btm_layout = QHBoxLayout()
-        self.btm_layout.setContentsMargins(0, 0, 0, 0)
-        self.btn_reset = BarrenButton(label="Reset", parent=self, cmd=self.ctl_clear_zones)
+        self.layout_btm_btn = QHBoxLayout()
+        self.layout_btm_btn.setContentsMargins(0, 0, 0, 0)
+        self.btn_reset = BarrenButton(label="Reset All", parent=self, cmd=self.ctl_clear_zones)
         self.btn_debug = BarrenButton(label="Debug", parent=self, cmd=self.ctr_debug)
-        self.btm_layout.addWidget(self.btn_debug)
-        self.btm_layout.addWidget(self.btn_reset)
+        self.layout_btm_btn.addWidget(self.btn_debug)
+        self.layout_btm_btn.addWidget(self.btn_reset)
         self.results_grp = self.build_results_group()
         self.lbl_area = QLabel("Total Area: 0")
         self.lbl_area.setAlignment(Qt.AlignCenter)
         # Add everything to the controls layout
-        self.controls_layout.addLayout(self.input)
-        self.controls_layout.addWidget(self.btn_add_bzone)
-        self.controls_layout.addWidget(self.btn_run)
-        self.controls_layout.addWidget(self.results_grp)
-        self.controls_layout.addWidget(self.lbl_area)
-        self.controls_layout.addLayout(self.btm_layout)
+        self.layout_controls.addLayout(self.input)
+        self.layout_controls.addWidget(self.btn_add_bzone)
+        self.layout_controls.addWidget(self.btn_run)
+        self.layout_controls.addWidget(self.results_grp)
+        self.layout_controls.addWidget(self.lbl_area)
+        self.layout_controls.addLayout(self.layout_btm_btn)
         # Add to the windows base layout.
-        self.base_layout.addWidget(self.controls)
+        self.layout_base.addWidget(self.controls)
 
     def build_results_group(self):
         """Build the results group to contain the results of analysis.
@@ -171,13 +184,13 @@ class BarrenLandsWindow(QMainWindow):
         Returns:
             results_grp (QGroupBox): The group box that contains the results layout.
         """
-        results_grp = QGroupBox("results")
-        results_grp.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        grp_results = QGroupBox("Results: Largest island zone.")
+        grp_results.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         # Add a layout to hold all the results from the Analysis.
-        self.result_layout = QVBoxLayout()
-        self.result_layout.setContentsMargins(0, 0, 0, 0)
-        results_grp.setLayout(self.result_layout)
-        return results_grp
+        self.layout_results = QVBoxLayout()
+        self.layout_results.setContentsMargins(0, 0, 0, 0)
+        grp_results.setLayout(self.layout_results)
+        return grp_results
 
     def build_coord_input(self):
         """Build the necessary elements for the user input text box.
@@ -185,16 +198,18 @@ class BarrenLandsWindow(QMainWindow):
         Returns:
             (QVBoxLayout): The base layout of the coord input.
         """
-        base_layout = QVBoxLayout()
-        base_layout.setContentsMargins(0, 0, 0, 0)
+        layout_base = QVBoxLayout()
+        layout_base.setContentsMargins(0, 0, 0, 0)
         self.raw_input = QPlainTextEdit()
         self.raw_input.setMaximumHeight(75)
         self.raw_input.setPlaceholderText('example: "0 292 399 307"')
-        self.input_layout = QVBoxLayout()
-        self.input_layout.setContentsMargins(0, 0, 0, 0)
-        base_layout.addWidget(self.raw_input)
-        base_layout.addLayout(self.input_layout)
-        return base_layout
+        if self.user_input:
+            self.raw_input.setPlainText(self.user_input)
+        self.layout_input = QVBoxLayout()
+        self.layout_input.setContentsMargins(0, 0, 0, 0)
+        layout_base.addWidget(self.raw_input)
+        layout_base.addLayout(self.layout_input)
+        return layout_base
 
     def ctr_debug(self):
         """CONTROL: Called by the 'debug' button to randomly assign colors to the zones."""
@@ -210,9 +225,9 @@ class BarrenLandsWindow(QMainWindow):
         raw_data = self.raw_input.toPlainText()
         if raw_data:
             parsed_input = utils.format_raw_input(raw_data)
-            for input in parsed_input:
-                start_coord = land.Coord(input[0], input[1])
-                end_coord = land.Coord(input[2], input[3])
+            for user_input in parsed_input:
+                start_coord = land.Coord(user_input[0], user_input[1])
+                end_coord = land.Coord(user_input[2], user_input[3])
                 zone = land.Zone(start_coord, end_coord)
                 self.field.add_zone(zone, barren=True)
                 self.draw_zone(zone, barren=True)
@@ -231,25 +246,31 @@ class BarrenLandsWindow(QMainWindow):
         # Format and draw the results in the QGraphicsScene.
         for i, island in enumerate(self.field.islands):
             for zone in island:
-                rectangle = self.draw_zone(zone, i>0)
+                rectangle = self.draw_zone(zone)
                 size = zone.get_size()
-                if i == 0:  # Only add first (largest) is;and to results
+                if i == 0:  # Only add (largest) island to results. Always at 0.
                     total_area += size
                     self.results.add(ResultLabel(label=str(size), rectangle=rectangle, zone=zone))
                 else:
+                    # This zone is fertile, but Inaccessible.
                     rectangle.setBrush(self.brush_fertile_no_go)
                 self.canvas.update()
+                # Pain the update for the user to see the new zone.
                 self.app.processEvents()
                 # Dont show all at the same time. (For more pleasing visual)
                 time.sleep(.015)
 
-        print(total_area)
+        # Print islands, smallest to largest.
+        print("Islands", self.field.islands_as_area())
+        island_areas = " ".join(str(i) for i in self.field.islands_as_area())
+        self.lbl_island.setText(f"Island Areas: {island_areas}")
+        # Set the label as the total area as the largest island.
         self.lbl_area.setText(f"Total Area: {total_area}")
 
         # Sort the results by their zones area.
         for result in sorted(self.results, key=lambda x: x.zone.get_size()):
             # Add the result to the results layout in the UI
-            self.result_layout.addWidget(result)
+            self.layout_results.addWidget(result)
 
     def ctl_clear_zones(self):
         """CONTROL: Called by the 'Reset' button to handle resetting the data and graphics."""
@@ -266,6 +287,8 @@ class BarrenLandsWindow(QMainWindow):
         for result in self.results:
             result.deleteLater()
         self.results = set()
+        self.lbl_area.setText("Total Area:")
+        self.lbl_island.setText("Island Areas:")
 
     def draw_zone(self, zone, barren=False):
         """Creates a QGraphicsRecItem from a Zone and adds it to the scene.

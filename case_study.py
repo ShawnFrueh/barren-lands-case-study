@@ -27,8 +27,11 @@ if __name__ == "__main__":
         from barren_lands.interact import BarrenLandsWindow
         # Initialize the Qt Application
         case_study_app = QApplication(sys.argv)
+        # Format zones for GUI raw_input
+        zones = " ".join([f'"{i}"' for i in BARREN_DATA.zones]) if BARREN_DATA.zones else None
+
         # Initialize the window
-        window = BarrenLandsWindow(width=BARREN_DATA.width, height=BARREN_DATA.height)
+        window = BarrenLandsWindow(width=BARREN_DATA.width, height=BARREN_DATA.height, zones=zones)
         # Display the UI
         window.show()
         # Kickstart the application
@@ -51,4 +54,4 @@ if __name__ == "__main__":
             Field.display()
 
         # Return the zone areas sorted from least to most surface area.
-        print(sorted([zone.get_size() for zone in Field.fertile_zones]))
+        print("Island Areas:", Field.islands_as_area())

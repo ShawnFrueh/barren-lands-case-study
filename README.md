@@ -1,8 +1,10 @@
 # target-case-study
 
 ## Setup
-Create your ENV and enter it.
+Create your ENV and enter it. (I used conda for this.)
 `conda env create -f ./conda_env.yml`
+
+if using another environment type, just pip install the requirements.txt file.
 
 ### Test (using env)
 `python -m pytest -v -s --cov=barren_lands tests`
@@ -10,10 +12,11 @@ Create your ENV and enter it.
 
 ### Run (using env)
 Use `--vis` to display the image result
-- `python case_study.py --vis --zones "0 292 399 307"`
-- `python case_study.py --vis --zones "48 192 351 207" "48 392 351 407" "120 52 135 547" "260 52 275 547"`
-Use `--gui` to open the GUI application
-- `python case_study.py --gui`
+- `python case_study.py --zones "0 292 399 307"`
+- `python case_study.py --zones "48 192 351 207" "48 392 351 407" "120 52 135 547" "260 52 275 547"`
+- Use `--gui` to open the GUI application
+  - `python case_study.py --gui`
+  - `python case_study.py --gui --zones "0 292 399 307"`
 
 ## Barren Land Analysis
 ```text
@@ -57,4 +60,25 @@ icon
   - In this paper, it talks about the various methods to tackle this problem and shows there is no "generally best" method. You have to balance between time and memory consumption.
   
  ## Case study conclusion:
+ Parsing though this puzzle was quite fun. While I initially attempted as much as I could on my own.
+ I did have to reach out to the inter-webs to check out a few ways of solving some steps. Taking a
+ quick look as what the web had to offer I came across an [image](https://i.stack.imgur.com/ay5pt.png)
+ that helped me determine how I wanted to solve the task at hand. Left->Right->Top->Bottom. This
+ helped fill the regions and Initially I though I was done. I had the zones and the list of zones in
+ order from least to largest. I wasn't until I was re-reading the synopsis and discovered that I had
+ interpreted the outputs incorrectly and that it wasn't the individual zones but rather the 
+ individual islands. 
  
+ Trying to find the connected pairs of rectangles to create the islands, I came across 
+ [this post](https://stackoverflow.com/questions/2254697/how-can-i-group-an-array-of-rectangles-into-islands-of-connected-regions)
+ about connected components. I was then able to use the information here to correctly separate the
+ different zones into their respective islands. 
+ 
+ How to accelerate and scale this to use in a production environment? I was looking into how I was
+ solving the topic and with the amount of looping that was happening I figured they must be a way
+ to help parallelize the code and I came across this paper: [GPU-accelerated rectangular 
+ decomposition for sound propagation modeling in 2d](https://www.researchgate.net/publication/335740556_GPU-accelerated_rectangular_decomposition_for_sound_propagation_modeling_in_2D)
+ the audio visuals for figure 7 are incredible. The code to handle such a task can be found on their
+ github links.
+ - [Adaptive Boxes](https://github.com/jnfran92/adaptive-boxes)
+ - [Adaptive Boxes GPU](https://github.com/jnfran92/adaptive-boxes-gpu)
