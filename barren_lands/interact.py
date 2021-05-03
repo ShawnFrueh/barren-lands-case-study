@@ -81,6 +81,7 @@ class BarrenLandsWindow(QMainWindow):
         self.brush_overlay = QBrush(QColor(20, 20, 20, 35), Qt.SolidPattern)
         self.brush_innerlay = QBrush(QColor(32, 37, 44), Qt.SolidPattern)
         self.brush_fertile = QBrush(QColor(90, 220, 90, 150), Qt.Dense5Pattern)
+        self.brush_fertile_no_go = QBrush(QColor(90, 220, 90, 150), Qt.BDiagPattern)
 
         # Setup the filed class that will handle our calculations.
         self.field = land.Field(width=self.canvas_width, height=self.canvas_height)
@@ -152,11 +153,14 @@ class BarrenLandsWindow(QMainWindow):
         self.btm_layout.addWidget(self.btn_debug)
         self.btm_layout.addWidget(self.btn_reset)
         self.results_grp = self.build_results_group()
+        self.lbl_area = QLabel("Total Area: 0")
+        self.lbl_area.setAlignment(Qt.AlignCenter)
         # Add everything to the controls layout
         self.controls_layout.addLayout(self.input)
         self.controls_layout.addWidget(self.btn_add_bzone)
         self.controls_layout.addWidget(self.btn_run)
         self.controls_layout.addWidget(self.results_grp)
+        self.controls_layout.addWidget(self.lbl_area)
         self.controls_layout.addLayout(self.btm_layout)
         # Add to the windows base layout.
         self.base_layout.addWidget(self.controls)
@@ -225,16 +229,22 @@ class BarrenLandsWindow(QMainWindow):
         self.field.check_zones()
         total_area = 0
         # Format and draw the results in the QGraphicsScene.
-        for zone in self.field.fertile_zones:
-            rectangle = self.draw_zone(zone)
-            size = zone.get_size()
-            self.results.add(ResultLabel(label=str(size), rectangle=rectangle, zone=zone))
-            self.canvas.update()
-            self.app.processEvents()
-            # Dont show all at the same time. (For more pleasing visual)
-            time.sleep(.025)
-            total_area += size
+        for i, island in enumerate(self.field.islands):
+            for zone in island:
+                rectangle = self.draw_zone(zone, i>0)
+                size = zone.get_size()
+                if i == 0:  # Only add first (largest) is;and to results
+                    total_area += size
+                    self.results.add(ResultLabel(label=str(size), rectangle=rectangle, zone=zone))
+                else:
+                    rectangle.setBrush(self.brush_fertile_no_go)
+                self.canvas.update()
+                self.app.processEvents()
+                # Dont show all at the same time. (For more pleasing visual)
+                time.sleep(.025)
+
         print(total_area)
+        self.lbl_area.setText(f"Total Area: {total_area}")
 
         # Sort the results by their zones area.
         for result in sorted(self.results, key=lambda x: x.zone.get_size()):

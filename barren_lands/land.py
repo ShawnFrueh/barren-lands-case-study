@@ -1,4 +1,6 @@
-from itertools import product
+from itertools import product, combinations
+from collections import defaultdict
+
 from .visualize import display_image
 
 
@@ -16,6 +18,7 @@ class Field(object):
         self.zone = Zone(Coord(0, 0), Coord(width-1, height-1))
         self.barren_zones = set()
         self.fertile_zones = set()
+        self.islands = list()
 
     def check_coord(self, coord):
         """Checks to see if the Coordinate is within a barren or fertile zone.
@@ -58,6 +61,8 @@ class Field(object):
             current_coord = Coord(x, y)
             if self.check_coord(current_coord):
                 self.mark_zone(current_coord)
+        # Partition zones into their respective islands.
+        self.gather_islands()
 
     def mark_zone(self, zone_start):
         """Marks a zone from an input coordinate.
@@ -73,6 +78,43 @@ class Field(object):
         new_zone = Zone(zone_start, zone_end)
         self.add_zone(new_zone)
         return new_zone
+
+    def gather_islands(self):
+        """Handles taking the final zones and grouping them into islands of connected zones.
+
+        Notes:
+            https://stackoverflow.com/questions/2254697/how-can-i-group-an-array-of-rectangles-into-islands-of-connected-regions
+        """
+        neighbours = defaultdict(set)
+        self.islands = list()
+        visited = set()
+        # Get all zone pairs and check to see if they are neighbors.
+        for zone in self.fertile_zones:
+            for n_zone in self.fertile_zones:
+                if zone != n_zone and zone.is_neighbor(n_zone):
+                    neighbours[zone.id()].add(n_zone)
+        # Re-iterate over the fertile zones
+        for zone in self.fertile_zones:
+            if zone.id() not in visited:
+                island_zones = set()
+                zone_que = set()
+                zone_que.add(zone)
+                while zone_que:
+                    z = zone_que.pop()
+                    for n in neighbours.get(z.id(), [z]):
+                        if n.id() not in visited:
+                            # This is a neighbour, add it to our island set.
+                            island_zones.add(n)
+                            # Mark that we have visited this zone
+                            visited.add(n.id())
+                            # Add the neighbour to the Que to then check for it's neighbours.
+                            zone_que.add(n)
+                if island_zones:
+                    self.islands.append(island_zones)
+        # Sort the island list from largest to smallest
+        self.islands.sort(key=lambda i: len(i), reverse=True)
+        for island in self.islands:
+            print(island)
 
     def get_end(self, coord):
         """Gets the last unmarked coordinate in the same row.
@@ -120,7 +162,7 @@ class Field(object):
         Args:
             test (bool): If running a pytest, dont display the image.
         """
-        display_image(self.fertile_zones, self.width, self.height, test=test)
+        display_image(self.islands, self.width, self.height, test=test)
 
 
 class Coord(object):
@@ -144,6 +186,14 @@ class Coord(object):
             other (Coord): Other coordinate to check.
         """
         return self.x == other.x and self.y == other.y
+
+    def __hash__(self):
+        """Hashing capabilities to allow for use in sets.
+
+        Returns:
+            (hash): Hashed value using (x, y)
+        """
+        return hash((self.x, self.y))
 
     def __repr__(self):
         """Used for debugging with print ;)
@@ -219,6 +269,40 @@ class Zone(object):
         within_x = self.start.x <= coord.x <= self.end.x
         within_y = self.start.y <= coord.y <= self.end.y
         return within_x and within_y
+
+    def is_neighbor(self, zone):
+        """Checks to see if another zone is considered a neighbour.
+
+        Args:
+            zone (Zone): Zone to check if is neighbour.
+
+        Returns:
+            (bool): True if neighbour else False
+        """
+        for edge in zone.boundary():
+            # Extend by 1 to have border zones intersect.
+            within_x = (self.start.x - 1) <= edge.x <= (self.end.x + 1)
+            within_y = (self.start.y - 1) <= edge.y <= (self.end.y + 1)
+            if within_x and within_y:
+                return True
+        return False
+
+    def boundary(self):
+        """Find the outer perimeter of the zone and return all coordinates.
+
+        Returns:
+            boundary (set): The boundary coordinates to a zone.
+        """
+        boundary = set()
+        top = [boundary.add(Coord(x, self.start.y)) for x in range(self.start.x, self.end.x + 1)]
+        bottom = [boundary.add(Coord(x, self.end.y)) for x in range(self.start.x, self.end.x + 1)]
+        left = [boundary.add(Coord(self.end.x, y)) for y in range(self.start.y, self.end.y + 1)]
+        right = [boundary.add(Coord(self.start.x, y)) for y in range(self.start.y, self.end.y + 1)]
+
+        return boundary
+
+    def id(self):
+        return f"{self.start.x}-{self.start.y}-{self.end.x}-{self.end.y}"
 
     def __repr__(self):
         """Used for debugging with print ;)

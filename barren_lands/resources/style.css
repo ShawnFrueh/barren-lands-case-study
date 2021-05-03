@@ -33,6 +33,7 @@ QPlainTextEdit {
     color: #8f99a8;
     border: none;
 }
+QLabel,
 ResultLabel{
     color: #8f99a8;
 }

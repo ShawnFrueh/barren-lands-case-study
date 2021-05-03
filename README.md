@@ -42,6 +42,9 @@ The images here helped guide me to attempt filling in zones, `left`>`right`>`top
 Zone class: (Reassuring my math)
 - [Point within bounding box.](https://stackoverflow.com/questions/18295825/determine-if-point-is-within-bounding-box)
 
+Connected Components: Information here used to split up the zones into islands
+- [Rectangles into islands of connected regions](https://stackoverflow.com/questions/2254697/how-can-i-group-an-array-of-rectangles-into-islands-of-connected-regions)
+
 icon
 - https://www.vecteezy.com/vector-art/90874-vector-rolling-hills-flat-icons
 
