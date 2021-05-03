@@ -241,7 +241,7 @@ class BarrenLandsWindow(QMainWindow):
                 self.canvas.update()
                 self.app.processEvents()
                 # Dont show all at the same time. (For more pleasing visual)
-                time.sleep(.025)
+                time.sleep(.015)
 
         print(total_area)
         self.lbl_area.setText(f"Total Area: {total_area}")
@@ -268,10 +268,10 @@ class BarrenLandsWindow(QMainWindow):
         self.results = set()
 
     def draw_zone(self, zone, barren=False):
-        """
+        """Creates a QGraphicsRecItem from a Zone and adds it to the scene.
 
         Args:
-            zone:
+            zone (Zone): The zone to generate the rectangle from.
             barren (bool): barren colors if True else fertile color.
 
         Returns:

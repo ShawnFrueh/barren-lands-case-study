@@ -26,7 +26,7 @@ class TestGUI:
         # 'click' the Run button
         self.window.btn_run.click()
 
-        assert len(self.window.fertile_zones) == 2
+        assert len(self.window.fertile_zones) == 1
 
     def test_clear(self):
         # Make sure the reset, clears out all of the required data.

@@ -21,7 +21,7 @@ def display_image(islands, width=40, height=60, base=(20, 20, 20), test=False):
         for zone in island:
             # Get a random color
             rand_color = list(random.randint(0, 255) for i in range(3))
-            rand_color.append(255 if i else 22)
+            rand_color.append(10 if i else 255)
             # Draw the zone.
             drawer.rectangle(zone.rectangle(), fill=tuple(rand_color))
 

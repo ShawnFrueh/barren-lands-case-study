@@ -113,8 +113,6 @@ class Field(object):
                     self.islands.append(island_zones)
         # Sort the island list from largest to smallest
         self.islands.sort(key=lambda i: len(i), reverse=True)
-        for island in self.islands:
-            print(island)
 
     def get_end(self, coord):
         """Gets the last unmarked coordinate in the same row.
